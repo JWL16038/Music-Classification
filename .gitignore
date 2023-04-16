@@ -3,4 +3,7 @@ Data/fma_small
 Data/GTZAN
 Data/Own_data
 Data/Spotify
+Data/MillionSongSubset
+Data/msd-MAGD-genreAssignment.cls
+Data/msd-MASD-styleAssignment.cls
 Notebooks/.cache
