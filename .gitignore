@@ -1,2 +1,2 @@
-data/*
-Notebooks/.cache
+data/raw*
+data/processed*
