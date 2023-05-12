@@ -21,8 +21,8 @@ def extract_composer(artist):
 
 # Extracts the composition and the work number from the title entry
 def extract_composition(title):
-    #Join all patterns relating to the composition
-    search_pattern = "|".join([worknumber_pattern,compositional_pattern])
+    #Join all patterns relating to the composition and perform a find all search
+    search_pattern = "|".join([worknumber_pattern,composition_pattern])
     composition_result = re.findall(search_pattern, title, re.IGNORECASE)
     print(composition_result)
     if composition_result is not None:
@@ -41,6 +41,7 @@ def label_data():
     files_df = pd.DataFrame(columns=columns)    
     audio_files = processfiles()
     for index, file in enumerate(audio_files):
+        # If the metadata of an audio file is completely empty, we will skip it
         if any(v is None for v in [file.artist, file.title, file.album]):
             continue
         print(file.artist,file.title,file.album)
