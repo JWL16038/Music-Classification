@@ -7,7 +7,7 @@ from metadata_scraper import processfiles
 composer_pattern = r"Mozart|Beethoven|Bach|Ravel"
 composition_pattern = r"Piano|Sonata|Concerto|Violin|Oboe|Flute|Bassoon|String|Quartet|Quintet|Symphony|Trio|Fugue|Variations"
 worknumber_pattern = r"K.\s*\d+|Op.\s*\d+|No.\s*\d+"
-key_pattern = r"Major|Minor"
+key_pattern = r"[a-gA-G](?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?\sMajor|[a-gA-G](?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?\sMinor"
 
 
 # Extracts composer information from the artist entry
@@ -22,7 +22,7 @@ def extract_composer(artist):
 # Extracts the composition and the work number from the title entry
 def extract_composition(title):
     #Join all patterns relating to the composition and perform a find all search
-    search_pattern = "|".join([worknumber_pattern,composition_pattern])
+    search_pattern = "|".join([worknumber_pattern, composition_pattern, key_pattern])
     composition_result = re.findall(search_pattern, title, re.IGNORECASE)
     print(composition_result)
     if composition_result is not None:
@@ -44,7 +44,7 @@ def label_data():
         # If the metadata of an audio file is completely empty, we will skip it
         if any(v is None for v in [file.artist, file.title, file.album]):
             continue
-        print(file.artist,file.title,file.album)
+        print(file.artist,file.title)
         composer = extract_composer(file.artist)
         composition = extract_composition(file.title)
         movement = None
