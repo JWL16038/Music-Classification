@@ -7,7 +7,7 @@ from metadata_scraper import processfiles
 composer_pattern = r"Mozart|Beethoven|Bach|Ravel"
 composition_pattern = r"Piano|Sonata|Concerto|Violin|Oboe|Flute|Bassoon|String|Quartet|Quintet|Symphony|Trio|Fugue|Variations"
 worknumber_pattern = r"K.\s*\d+|Op.\s*\d+|No.\s*\d+"
-key_pattern = r"[a-gA-G](?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?\sMajor|[a-gA-G](?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?\sMinor"
+key_pattern = r"\b[A-G]\b(?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?(?:\sMajor|\sMinor)?"
 
 
 # Extracts composer information from the artist entry
