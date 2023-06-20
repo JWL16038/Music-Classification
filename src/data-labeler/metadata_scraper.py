@@ -26,21 +26,33 @@ class MusicFile:
     def getalbum():
         return self.album
 
+def longname(path):
+    """
+    Converts the current path to a long path. Function was taken from here: https://stackoverflow.com/questions/55815617/pathlib-path-rglob-fails-on-long-file-paths-in-windows
+    """
+    normalized = os.fspath(path.resolve())
+    if not normalized.startswith('\\\\?\\'):
+        normalized = '\\\\?\\' + normalized
+    return Path(normalized)
+
 # Extracts metadata information from the audio file
 def extract_metadata(file_path):
-    with open(file_path) as f:
-        audiofile = eyed3.load(file_path)
-    title = audiofile.tag.title
-    artist = audiofile.tag.artist
-    album = audiofile.tag.album
-    return title, artist, album 
+    try:
+        combined_path = full_path / file_path
+        # combined_path = longname(combined_path)
+        audiofile = eyed3.load(combined_path)
+        tag = audiofile.tag
+        return tag.title, tag.artist, tag.album 
+    except OSError as e:
+        return None, None, None
 
 # Process all files and to the file list
 def processfiles():
     file_paths = []
     audio_files = []
-    for file_path in full_path.glob("**/*"):
-        if file_path.suffix.lower() in audio_extensions:
+    for path in full_path.glob("**/*"):
+        if path.suffix.lower() in audio_extensions:
+            file_path = path.relative_to(full_path)
             file_paths.append(file_path)
 
     print(f"Total number of files: {len(file_paths)}")
