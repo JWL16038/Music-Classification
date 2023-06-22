@@ -26,7 +26,7 @@ class MusicFile:
     def getalbum():
         return self.album
 
-def longname(path):
+def parse_longpath(path):
     """
     Converts the current path to a long path. Function was taken from here: https://stackoverflow.com/questions/55815617/pathlib-path-rglob-fails-on-long-file-paths-in-windows
     """
@@ -39,8 +39,8 @@ def longname(path):
 def extract_metadata(file_path):
     try:
         combined_path = full_path / file_path
-        # combined_path = longname(combined_path)
-        audiofile = eyed3.load(combined_path)
+        modified_path = parse_longpath(combined_path)
+        audiofile = eyed3.load(modified_path)
         tag = audiofile.tag
         return tag.title, tag.artist, tag.album 
     except OSError as e:
