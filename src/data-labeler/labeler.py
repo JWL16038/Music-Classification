@@ -5,10 +5,11 @@ from pathlib import Path
 from metadata_scraper import processfiles
 
 composer_pattern = r"Mozart|Beethoven|Bach|Ravel"
-composition_pattern = r"Piano|Sonata|Concerto|Violin|Oboe|Flute|Bassoon|String|Quartet|Quintet|Symphony|Trio|Fugue|Variations|Overture"
+composition_pattern = r"Sonata|Concerto|String|Quartet|Quintet|Symphony|Trio|Fugue|Variations|Overture"
 worknumber_pattern = r"K.\s*\d+|Op.\s*\d+|No.\s*\d+"
 movement_pattern = r"0[0-9](?:\.\s|\s-\s)?.*|\d{1,2}(?:st|nd|rd|th)\sMovement.*|(IX|IV|V?I{1,3})(\.\s|\s-\s).*"
 key_pattern = r"\b[A-G]\b(?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?(?:\sMajor|\sMinor)?"
+instrument_pattern = r"Piano|Keyboard|Organ|Guitar|Violin|Viola|Cello|Double Bass|Piccolo|Flute|Oboe|Clarinet|Bassoon|Trumpet|Horn|Trombone|Tuba|Saxophone|Timpani|Harp|Recorder|Bagpipes|Ukulele"
 
 def extract_composer(file):
     """
@@ -49,8 +50,19 @@ def extract_movement(title):
     return None
 
 # Extracts the instrument (if applicable) from the title entry
-def extract_instruments():
-    return
+def extract_instruments(file):
+    """
+    Extracts instrument information from the title entry
+
+    """
+    # Get all possible entires from the file to search for the instruments.
+    entires = [file.artist,file.title,file.album]
+    for entry in entires:
+        instrument_result = re.search(instrument_pattern, entry, re.IGNORECASE)
+        if instrument_result is not None:
+            return instrument_result.group(0)
+    print("No instrument(s) found")
+    return None
 
 def label_data():
     """
@@ -66,11 +78,12 @@ def label_data():
         composer = extract_composer(file)
         composition = extract_composition(file.title)
         movement = extract_movement(file.title)
-        instruments = None
+        instruments = extract_instruments(file)
         print(f"Original file: {file.title}")
         print(f"Detected composer: {composer}")
         print(f"Detected composition: {composition}")
         print(f"Detected movement: {movement}")
+        print(f"Detected instruments: {instruments}")
         new_row = {"composer": composer,"composition": composition,"movement": movement,"instruments": instruments}
         files_df = pd.concat([files_df, pd.DataFrame([new_row])], ignore_index=True)
     return files_df
