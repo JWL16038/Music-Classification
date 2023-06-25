@@ -7,6 +7,7 @@ from metadata_scraper import processfiles
 composer_pattern = r"Mozart|Beethoven|Bach|Ravel"
 composition_pattern = r"Piano|Sonata|Concerto|Violin|Oboe|Flute|Bassoon|String|Quartet|Quintet|Symphony|Trio|Fugue|Variations|Overture"
 worknumber_pattern = r"K.\s*\d+|Op.\s*\d+|No.\s*\d+"
+movement_pattern = r"0[0-9](?:\.\s|\s-\s)?.*|\d{1,2}(?:st|nd|rd|th)\sMovement.*|(IX|IV|V?I{1,3})(\.\s|\s-\s).*"
 key_pattern = r"\b[A-G]\b(?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?(?:\sMajor|\sMinor)?"
 
 def extract_composer(file):
@@ -36,6 +37,17 @@ def extract_composition(title):
     else:
         return None
 
+def extract_movement(title):
+    """
+    Extracts movement information from the title entry
+
+    """
+    movement_result = re.search(movement_pattern, title, re.IGNORECASE)
+    if movement_result is not None:
+        return movement_result.group(0)
+    print("No movement found")
+    return None
+
 # Extracts the instrument (if applicable) from the title entry
 def extract_instruments():
     return
@@ -53,13 +65,15 @@ def label_data():
             continue
         composer = extract_composer(file)
         composition = extract_composition(file.title)
-        print(f"Original file: {file.artist},{file.title}")
+        movement = extract_movement(file.title)
+        instruments = None
+        print(f"Original file: {file.title}")
         print(f"Detected composer: {composer}")
         print(f"Detected composition: {composition}")
-        movement = None
-        instruments = None
+        print(f"Detected movement: {movement}")
         new_row = {"composer": composer,"composition": composition,"movement": movement,"instruments": instruments}
         files_df = pd.concat([files_df, pd.DataFrame([new_row])], ignore_index=True)
+    return files_df
 
 if __name__ == "__main__":
     print("Loading data labeler")
