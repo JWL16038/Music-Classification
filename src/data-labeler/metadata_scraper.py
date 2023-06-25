@@ -58,5 +58,5 @@ def processfiles():
     print(f"Total number of files: {len(file_paths)}")
     for file in file_paths:
         title, artist, album = extract_metadata(file)
-        audio_files.append((MusicFile(title, artist, album)))
+        audio_files.append((file,MusicFile(title, artist, album)))
     return audio_files

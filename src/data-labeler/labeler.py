@@ -68,13 +68,14 @@ def label_data():
     """
     Label the audio files
     """
-    columns = ["composer","composition","movement","instruments"]
+    columns = ["filename","composer","composition","movement","instruments"]
     files_df = pd.DataFrame(columns=columns)    
     audio_files = processfiles()
-    for index, file in enumerate(audio_files):
+    for index, (path, file) in enumerate(audio_files):
         # If the metadata of an audio file is completely empty, we will skip it
         if any(v is None for v in [file.artist, file.title, file.album]):
             continue
+        filename = path.name.__str__()
         composer = extract_composer(file)
         composition = extract_composition(file.title)
         movement = extract_movement(file.title)
@@ -84,7 +85,7 @@ def label_data():
         print(f"Detected composition: {composition}")
         print(f"Detected movement: {movement}")
         print(f"Detected instruments: {instruments}")
-        new_row = {"composer": composer,"composition": composition,"movement": movement,"instruments": instruments}
+        new_row = {"filename": filename,"composer": composer,"composition": composition,"movement": movement,"instruments": instruments}
         files_df = pd.concat([files_df, pd.DataFrame([new_row])], ignore_index=True)
     return files_df
 
