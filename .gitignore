@@ -1,4 +1,7 @@
 /data/**
 !/data/**/
 !/data/**/.gitkeep
+**/__pycache__/
+.vscode/*
+!.vscode/launch.json
 notebooks/Spotify/spotify_secret_key.txt
