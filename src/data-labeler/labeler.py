@@ -5,10 +5,10 @@ from pathlib import Path
 from metadata_scraper import processfiles
 
 composer_pattern = r"Mozart|Beethoven|Bach|Ravel"
-composition_pattern = r"Sonata|Concerto|String|Quartet|Quintet|Symphony|Trio|Fugue|Variations|Overture"
-worknumber_pattern = r"(K.\s*\d+|Op.\s*\d+)(?:No.\s*\d+)?"
-movement_pattern = r"0[0-9](?:\.\s|\s-\s)?.*|\d{1,2}(?:st|nd|rd|th)\sMovement.*|(IX|IV|V?I{1,3})(\.\s|\s-\s).*|(Allegro|Andante|Adagio|Allegretto|Moderato|Presto|Menuetto|Rondo|Vivace|Molto|Largo|Larghetto|Romance|Overture|Finale|Scherzo).*"
-key_pattern = r"\b[A-G]\b(?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?(?:\sMajor|\sMinor)?"
+composition_pattern = r"Sonata|Concerto|String|Quartet|Quintet|Symphony|Trio|Fugue|Variations|Overture|Rondo|Fantasy|Opera"
+worknumber_pattern = r"(K|KV|Op|OP|No)(?:.)?\s?\d+"
+movement_pattern = r"0[0-9](?:\.\s|\s-\s)?.*|\d{1,2}(?:st|nd|rd|th)\sMovement.*|(IX|IV|V?I{1,3})(\.\s|\s-\s).*|(Allegro|Andante|Adagio|Allegretto|Moderato|Presto|Menuetto|Rondo|Vivace|Molto|Largo|Larghetto|Romance|Finale|Scherzo).*"
+key_pattern = r"(?<=in)(?:\s)?\b[A-G]\b(?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?(?:\sMajor|\sMinor)?"
 instrument_pattern = r"Piano|Keyboard|Organ|Guitar|Violin|Viola|Cello|Double Bass|Piccolo|Flute|Oboe|Clarinet|Bassoon|Trumpet|Horn|Trombone|Tuba|Saxophone|Timpani|Harp|Recorder|Bagpipes|Ukulele"
 
 def extract_composer(file):
@@ -87,7 +87,7 @@ def extract_instruments(file):
     for entry in entires:
         instrument_result = re.search(instrument_pattern, entry, re.IGNORECASE)
         if instrument_result is not None:
-            return instrument_result.group(0)
+            return instrument_result.group(0).lower().capitalize()
     print("No instrument(s) found")
     return None
 
@@ -100,7 +100,7 @@ def label_data():
     audio_files = processfiles()
     for index, (path, file) in enumerate(audio_files):
         # If the metadata of an audio file is completely empty, we will skip it
-        if any(v is None for v in [file.artist, file.title, file.album]):
+        if all(v is None for v in [file.artist, file.title, file.album]):
             continue
         filename = path.name.__str__()
         composer = extract_composer(file)
@@ -116,6 +116,7 @@ def label_data():
         print(f"Detected instruments: {instruments}")
         new_row = {"filename": filename,"composer": composer,"composition": composition,"workno": worknumber,"key": key,"movement": movement,"instruments": instruments}
         files_df = pd.concat([files_df, pd.DataFrame([new_row])], ignore_index=True)
+    files_df = files_df.fillna('')
     return files_df
 
 if __name__ == "__main__":
