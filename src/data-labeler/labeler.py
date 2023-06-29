@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import re
+import logging
 from pathlib import Path
 from metadata_scraper import processfiles
 
@@ -22,7 +23,7 @@ def extract_composer(file):
         composer_result = re.search(composer_pattern, entry, re.IGNORECASE)
         if composer_result is not None:
             return composer_result.group(0).lower().capitalize()
-    print("No composer found")
+    logging.warn(f"No composer found for {file.title}")
     return None
 
 def extract_composition(title):
@@ -34,7 +35,7 @@ def extract_composition(title):
     composition_result = re.findall(composition_pattern, title, re.IGNORECASE)
     if composition_result is not None:
         return composition_result
-    print("No composition found")
+    logging.warning(f"No composition found for {title}")
     return None
 
 def extract_workno(file):
@@ -48,7 +49,7 @@ def extract_workno(file):
         workno_result = re.search(worknumber_pattern, entry, re.IGNORECASE)
         if workno_result is not None:
             return workno_result.group(0)
-    print("No work number found")
+    logging.warning(f"No work number found for {file.title}")
     return None
     
 
@@ -60,7 +61,7 @@ def extract_movement(title):
     movement_result = re.search(movement_pattern, title, re.IGNORECASE)
     if movement_result is not None:
         return movement_result.group(0)
-    print("No movement found")
+    logging.warning(f"No movement found for {title}")
     return None
 
 def extract_key(file):
@@ -74,7 +75,7 @@ def extract_key(file):
         key_result = re.search(key_pattern, entry, re.IGNORECASE)
         if key_result is not None:
             return key_result.group(0)
-    print("No key found")
+    logging.warning(f"No key found for {file.title}")
     return None
 
 def extract_instruments(file):
@@ -88,7 +89,7 @@ def extract_instruments(file):
         instrument_result = re.search(instrument_pattern, entry, re.IGNORECASE)
         if instrument_result is not None:
             return instrument_result.group(0).lower().capitalize()
-    print("No instrument(s) found")
+    logging.warning(f"No instrument(s) found for {file.title}")
     return None
 
 def label_data():
@@ -99,11 +100,12 @@ def label_data():
     files_df = pd.DataFrame(columns=columns)    
     audio_files = processfiles()
     for index, (path, file) in enumerate(audio_files):
-        # If the metadata of an audio file is completely empty, we will skip it
-        if all(v is None for v in [file.artist, file.title, file.album]):
-            continue
         file_path = path.parent.__str__()
         filename = path.name.__str__()
+        # If the metadata of an audio file is completely empty, we will skip it
+        if all(v is None for v in [file.artist, file.title, file.album]):
+            logging.warning(f"Skipping {filename} because its metadata is empty")
+            continue
         composer = extract_composer(file)
         composition = extract_composition(file.title)
         worknumber = extract_workno(file)
@@ -113,8 +115,10 @@ def label_data():
         new_row = {"path": file_path,"filename": filename,"title": file.title,"composer": composer,"composition": composition,"workno": worknumber,"key": key,"movement": movement,"instruments": instruments}
         files_df = pd.concat([files_df, pd.DataFrame([new_row])], ignore_index=True)
     files_df = files_df.fillna('')
+    logging.info(f"Processed {len(files_df)} music files")
     return files_df
 
 if __name__ == "__main__":
-    print("Loading data labeler")
+    logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
+    logging.info("Loading music data labeler")
     label_data()

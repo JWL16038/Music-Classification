@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import eyed3
 import re
+import logging
 from pathlib import Path
 
 absolute_path = Path().resolve().parent.parent
@@ -55,7 +56,7 @@ def processfiles():
             file_path = path.relative_to(full_path)
             file_paths.append(file_path)
 
-    print(f"Total number of files: {len(file_paths)}")
+    logging.info(f"Read in {len(file_paths)} music files")
     for file in file_paths:
         title, artist, album = extract_metadata(file)
         audio_files.append((file,MusicFile(title, artist, album)))
