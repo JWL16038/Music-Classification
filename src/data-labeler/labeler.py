@@ -5,6 +5,10 @@ import logging
 from pathlib import Path
 from metadata_scraper import processfiles
 
+absolute_path = Path().resolve().parent.parent
+relative_path = Path('data/processed/classical_music_files')
+full_path = absolute_path / relative_path
+
 composer_pattern = r"Mozart|Beethoven|Bach|Ravel"
 composition_pattern = r"Sonata|Concerto|String|Quartet|Quintet|Symphony|Trio|Fugue|Variations|Overture|Rondo|Fantasy|Opera"
 worknumber_pattern = r"(K|KV|Op|OP|No)(?:.)?\s?\d+"
@@ -118,7 +122,16 @@ def label_data():
     logging.info(f"Processed {len(files_df)} music files")
     return files_df
 
+def save_csv(df):
+    try:
+        df.to_csv(os.path.join(full_path,"metadata.csv"),index=False)
+        logging.info(f"Metadata saved successfully to {full_path}/metadata.csv")
+    except Exception as e:
+        logging.error(f"Saving metadata failed! {str(e)}")
+    return
+
 if __name__ == "__main__":
     logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
     logging.info("Loading music data labeler")
-    label_data()
+    df = label_data()
+    save_csv(df)
