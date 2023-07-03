@@ -11,8 +11,9 @@ full_path = absolute_path / relative_path
 
 composer_pattern = r"Mozart|Beethoven|Bach|Ravel"
 composition_pattern = r"Sonata|Concerto|String|Quartet|Quintet|Symphony|Trio|Fugue|Variations|Overture|Rondo|Fantasy|Opera"
-worknumber_pattern = r"(K|KV|Op|OP|No)(?:.)?\s?\d+"
-movement_pattern = r"0[0-9](?:\.\s|\s-\s)?.*|\d{1,2}(?:st|nd|rd|th)\sMovement.*|(IX|IV|V?I{1,3})(\.\s|\s-\s).*|(Allegro|Andante|Adagio|Allegretto|Moderato|Presto|Menuetto|Rondo|Vivace|Molto|Largo|Larghetto|Romance|Finale|Scherzo).*"
+worknumber_pattern = r"((?:K|KV|Op|OP|No)(?:.)?\s?\d+)"
+movement_pattern = r"\d{1,2}(?:st|nd|rd|th)\sMovement.*|(First|Second|Third|Forth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth)\sMovement.*|(IX|IV|V?I{1,3})(\.\s|\s-\s).*|(Allegro|Andante|Adagio|Allegretto|Moderato|Presto|Menuetto|Rondo|Vivace|Molto|Largo|Larghetto|Romance|Finale|Scherzo|Overture).*"
+movement_number_pattern = r"([0-9][0-9](\.\s|\s-\s).*)"
 key_pattern = r"(?<=in)(?:\s)?\b[A-G]\b(?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?(?:\sMajor|\sMinor)?"
 instrument_pattern = r"Piano|Keyboard|Organ|Guitar|Violin|Viola|Cello|Double Bass|Piccolo|Flute|Oboe|Clarinet|Bassoon|Trumpet|Horn|Trombone|Tuba|Saxophone|Timpani|Harp|Recorder|Bagpipes|Ukulele"
 
@@ -27,7 +28,7 @@ def extract_composer(file):
         composer_result = re.search(composer_pattern, entry, re.IGNORECASE)
         if composer_result is not None:
             return composer_result.group(0).lower().capitalize()
-    logging.warn(f"No composer found for {file.title}")
+    logging.warning(f"No composer found for {file.title}")
     return None
 
 def extract_composition(title):
@@ -36,24 +37,25 @@ def extract_composition(title):
 
     """
     #Join all patterns relating to the composition and perform a find all search
-    composition_result = re.findall(composition_pattern, title, re.IGNORECASE)
+    composition_result = re.search(composition_pattern, title, re.IGNORECASE)
     if composition_result is not None:
-        return composition_result
+        return composition_result.group(0)
     logging.warning(f"No composition found for {title}")
     return None
 
-def extract_workno(file):
+def extract_workno(title):
     """
     Extract work number (opus) information from the file metadata.
 
     """
     # Get all possible entires from the file to search for the work number.
-    entires = [file.artist,file.title,file.album]
-    for entry in entires:
-        workno_result = re.search(worknumber_pattern, entry, re.IGNORECASE)
-        if workno_result is not None:
-            return workno_result.group(0)
-    logging.warning(f"No work number found for {file.title}")
+    matches = []
+    # for entry in entires:
+    result = re.findall(worknumber_pattern, title, re.IGNORECASE)
+    if result is not None:
+        matches = list(dict.fromkeys(result))
+        return ", ".join(matches)
+    logging.warning(f"No work number found for {title}")
     return None
     
 
@@ -62,6 +64,15 @@ def extract_movement(title):
     Extracts movement information from the title entry
 
     """
+    # Find all movements that begins with a number. First filter all results that contain the work number then find the movement.
+    title_search = title
+    workno_last_match = list(re.finditer(worknumber_pattern, title, re.IGNORECASE))#re.search(worknumber_pattern, title, re.IGNORECASE)[-1]
+    if workno_last_match:
+        start_position = workno_last_match[-1].end()
+        title_search = title[start_position:]
+    movement_result = re.search(movement_number_pattern, title_search, re.IGNORECASE)
+    if movement_result is not None:
+        return movement_result.group(0)
     movement_result = re.search(movement_pattern, title, re.IGNORECASE)
     if movement_result is not None:
         return movement_result.group(0)
@@ -112,7 +123,7 @@ def label_data():
             continue
         composer = extract_composer(file)
         composition = extract_composition(file.title)
-        worknumber = extract_workno(file)
+        worknumber = extract_workno(file.title)
         key = extract_key(file)
         movement = extract_movement(file.title)
         instruments = extract_instruments(file)
