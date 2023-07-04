@@ -17,7 +17,7 @@ worknumber_number_pattern = r"((?:No)(?:.)?\s?\d+)"
 movement_pattern = r"\d{1,2}(?:st|nd|rd|th)\sMovement.*|(First|Second|Third|Forth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth)\sMovement.*|(IX|IV|V?I{1,3})(\.\s|\s-\s).*|(Allegro|Andante|Adagio|Allegretto|Moderato|Presto|Menuetto|Rondo|Vivace|Molto|Largo|Larghetto|Romance|Finale|Scherzo|Overture).*"
 movement_number_pattern = r"([0-9][0-9](\.\s|\s-\s).*)"
 key_pattern = r"(?<=in)(?:\s)?\b[A-G]\b(?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?(?:\sMajor|\sMinor)?"
-instrument_pattern = r"Piano|Keyboard|Organ|Guitar|Violin|Viola|Cello|Double Bass|Piccolo|Flute|Oboe|Clarinet|Bassoon|Trumpet|Horn|Trombone|Tuba|Saxophone|Timpani|Harp|Recorder|Bagpipes|Ukulele"
+instrument_pattern = r"\b(Piano|Keyboard|Organ|Guitar|Violin|Viola|Cello|Double Bass|Piccolo|Flute|Oboe|Clarinet|Bassoon|Trumpet|Horn|Trombone|Tuba|Saxophone|Timpani|Harp|Recorder|Bagpipes|Ukulele)(?:s)?\b"
 
 def extract_composer(file):
     """
@@ -120,7 +120,7 @@ def extract_instruments(file):
     for entry in entires:
         instrument_result = re.search(instrument_pattern, entry, re.IGNORECASE)
         if instrument_result is not None:
-            return instrument_result.group(0).lower().capitalize()
+            return instrument_result.group(1).lower().capitalize()
     logging.warning(f"No instrument(s) found for {file.title}")
     return None
 
