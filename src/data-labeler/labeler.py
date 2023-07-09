@@ -12,6 +12,7 @@ full_path = absolute_path / relative_path
 composer_pattern = r"Mozart|Beethoven|Bach|Ravel"
 composition_pattern = r"Sonata|Concerto|String|Quartet|Quintet|Symphony|Trio|Fugue|Variations|Overture|Rondo|Fantasy|Opera|Divermento|Serenade|Ballet"
 composition_number = r"((?:No)(?:.)?\s?\d+)|((?:Nos)(?:.)?\s?\d+\sand\s\d+)"
+nickname_pattern = r"(?<=\").*?(?=\")|(?<=').*?(?=')"
 worknumber_pattern = r"((?:K|KV|OP|Opus)(?:.)?\s?\d+[a-z]?)"
 worknumber_number_pattern = r"((?:No)(?:.)?\s?\d+)"
 movement_pattern = r"\d{1,2}(?:st|nd|rd|th)\sMov(?:ement)?.*|(First|Second|Third|Forth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth)\sMov(?:ement).*|(IX|IV|V?I{1,3})(\.\s|\s-\s).*|Mov(?:ement)?(?:s)?\s(IX|IV|V?I{1,3}).*|Act\s\d{1,2}(?:.)?.*|((?<=:\s)|(?<=-\s))(Allegro|Andante|Andantino|Adagio|Allegretto|Moderato|Presto|Assai|Menuetto|Rondo|Vivace|Molto|Largo|Larghetto|Romance|Finale|Scherzo|(?:Un\s)?Poco|Grave|Pastorale|Maestoso|Overture|Introduction).*"
@@ -61,6 +62,17 @@ def extract_composition_no(title):
     if composition_no_result is not None:
         return composition_no_result.group(0)
     logging.warning(f"No composition number found for {title}")
+    return None
+
+def extract_nickname(title):
+    """
+    Extracts the nickname of the work from the title entry.
+
+    """
+    nickname_result = re.search(nickname_pattern, title, re.IGNORECASE)
+    if nickname_result is not None:
+        return nickname_result.group(0)
+    logging.warning(f"No nickname found for {title}")
     return None
 
 def extract_workno(title):
@@ -129,7 +141,7 @@ def label_data():
     """
     Label the audio files
     """
-    columns = ["path","filename","title","composer","composition","composition_number","workno","key","movement","instruments"]
+    columns = ["path","filename","title","composer","composition","composition_number","nickname","workno","key","movement","instruments"]
     files_df = pd.DataFrame(columns=columns)    
     audio_files = processfiles()
     for index, (path, file) in enumerate(audio_files):
@@ -142,11 +154,12 @@ def label_data():
         composer = extract_composer(file)
         composition = extract_composition(file.title)
         composition_number = extract_composition_no(file.title)
+        nickname = extract_nickname(file.title)
         worknumber = extract_workno(file.title)
         key = extract_key(file.title)
         movement = extract_movement(file.title)
         instruments = extract_instruments(file.title)
-        new_row = {"path": file_path,"filename": filename,"title": file.title,"composer": composer,"composition": composition,"composition_number": composition_number, "workno": worknumber,"key": key,"movement": movement,"instruments": instruments}
+        new_row = {"path": file_path,"filename": filename,"title": file.title,"composer": composer,"composition": composition,"composition_number": composition_number,"nickname": nickname,"workno": worknumber,"key": key,"movement": movement,"instruments": instruments}
         files_df = pd.concat([files_df, pd.DataFrame([new_row])], ignore_index=True)
     files_df = files_df.fillna('')
     logging.info(f"Processed {len(files_df)} music files")
