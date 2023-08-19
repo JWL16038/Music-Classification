@@ -10,12 +10,12 @@ relative_path = Path('data/processed/classical_music_files')
 full_path = absolute_path / relative_path
 
 composer_pattern = r"Mozart|Beethoven|Bach|Ravel"
-composition_pattern = r"Sonata|Concerto|String|Quartet|Quintet|Symphony|Trio|Fugue|Variations|Overture|Rondo|Fantasy|Opera|Divermento|Serenade|Ballet"
-composition_number = r"((?:No)(?:.)?\s?\d+)|((?:Nos)(?:.)?\s?\d+\sand\s\d+)"
+composition_pattern = r"Sonata|Concerto|String|Quartet|Quintet|Symphony|Trio|Suite|Prelude|Fugue|Variations|Overture|Rondo|Fantasy|Opera|Divermento|Serenade|Ballet"
+composition_number = r"((?:No)(?:.)?\s?\d+)|((?:Nos)(?:.)?\s?\d+\sand\s\d+)|(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(?=\sin)"
 nickname_pattern = r"(?<=\").*?(?=\")|(?<=').*?(?=')"
-worknumber_pattern = r"((?:K|KV|OP|Opus)(?:.)?\s?\d+[a-z]?)"
+worknumber_pattern = r"((?:K|KV|OP|Opus|BWV)(?:.)?\s?\d+[a-z]?)"
 worknumber_number_pattern = r"((?:No)(?:.)?\s?\d+)"
-movement_pattern = r"\d{1,2}(?:st|nd|rd|th)\sMov(?:ement)?.*|(First|Second|Third|Forth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth)\sMov(?:ement).*|(IX|IV|V?I{1,3})(\.\s|\s-\s).*|Mov(?:ement)?(?:s)?\s(IX|IV|V?I{1,3}).*|Act\s\d{1,2}(?:.)?.*|((?<=:\s)|(?<=-\s))(Allegro|Andante|Andantino|Adagio|Allegretto|Moderato|Presto|Assai|Menuetto|Rondo|Vivace|Molto|Largo|Larghetto|Romance|Finale|Scherzo|(?:Un\s)?Poco|Grave|Pastorale|Maestoso|Overture|Introduction).*"
+movement_pattern = r"\d{1,2}(?:st|nd|rd|th)\sMov(?:ement)?.*|(First|Second|Third|Forth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth)\sMov(?:ement).*|(IX|IV|V?I{1,3})(\.\s|\s-\s).*|Mov(?:ement)?(?:s)?\s(IX|IV|V?I{1,3}).*|Act\s\d{1,2}(?:.)?.*|((?<=:\s)|(?<=-\s))(Allegro|Andante|Andantino|Adagio|Allegretto|Moderato|Presto|Assai|Menuetto|Rondo|Vivace|Molto|Largo|Larghetto|Romance|Finale|Scherzo|(?:Un\s)?Poco|Grave|Pastorale|Maestoso|Overture|Introduction).*|Variatio\s\d{1,2}.*|\bAria.*\b"
 movement_number_pattern = r"([0-9][0-9](\.\s|\s-\s).*)"
 key_pattern = r"(?<=in)(?:\s)?\b[A-G]\b(?:-Flat|\sFlat|b|-Sharp|\sSharp|#)?(?:\sMajor|\sMinor)?"
 instrument_pattern = r"\b(Piano|Keyboard|Organ|Guitar|Violin|Viola|Cello|Double Bass|Piccolo|(?<!Magic\s)Flute|Oboe|Clarinet|Bassoon|Trumpet|Horn|Trombone|Tuba|Saxophone|Timpani|Harp|Recorder|Bagpipes|Ukulele)(?:s)?\b"
@@ -39,9 +39,11 @@ def extract_composition(title):
     Extracts the composition from the title entry.
 
     """
-    composition_result = re.search(composition_pattern, title, re.IGNORECASE)
+    composition_result = re.findall(composition_pattern, title, re.IGNORECASE)
     if composition_result is not None:
-        return composition_result.group(0)
+        matches = list(map(lambda s: s.capitalize(), composition_result))
+        matches = list(dict.fromkeys(matches))
+        return ", ".join(matches)
     logging.warning(f"No composition found for {title}")
     return None
 
